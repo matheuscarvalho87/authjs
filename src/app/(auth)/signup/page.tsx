@@ -2,6 +2,7 @@
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
+import axios from 'axios'
 import {
   Card,
   CardContent,
@@ -12,19 +13,25 @@ import {
 import { Input } from "@/components/ui/input"
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
+import {toast} from 'sonner'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 const schema = z.object({
   firstName: z.string().min(2, 'Informe um nome válido'),
   lastName: z.string().min(2, 'Informe um sobrenome válido'),
   email: z.string().email('Informe um email válido'),
-  password: z.string().min(1, 'Informe a senha')
+  password: z.string().min(8, 'Pelo menos 8 caracteres')
 })
 
 type FormData = z.infer<typeof schema>
 
 export default function SignUp() {
+  const router = useRouter()
+
+  const [isLoading,setIsLoading] = useState(false)
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -36,8 +43,18 @@ export default function SignUp() {
     }
   });
 
-  const handleSubmit = form.handleSubmit((formData) => {
-    console.log('form', formData)
+  const handleSubmit = form.handleSubmit(async (formData) => {
+    try{
+      setIsLoading(true)
+      await axios.post('/api/auth/signup',formData)
+      router.push('/signin')
+      toast("Conta cadastrada com sucesso",{
+        description:'Faça login agora mesmo'
+      })
+    } catch {
+      toast.error('Erro ao criar sua conta')
+      setIsLoading(false)
+    } 
   })
   return (
     <Card className="mx-auto max-w-sm">
@@ -104,8 +121,13 @@ export default function SignUp() {
                   </FormItem>
                 )}
               />
-            <Button type="submit" className="w-full">
-              Cadastrar
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isLoading}
+            >
+              {!isLoading && 'Criar conta'}
+              {isLoading && ' Criando conta...'}
             </Button>
             <Button variant="outline" type='button' className="w-full">
               Cadastrar com GitHub

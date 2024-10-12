@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
   title: "Live 051 - auth",
@@ -17,6 +18,7 @@ export default function RootLayout({
         className={`antialiased`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );

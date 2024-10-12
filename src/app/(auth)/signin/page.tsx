@@ -15,6 +15,10 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { useState } from 'react'
+import axios from 'axios'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const schema = z.object({
   email: z.string().email('Informe um email válido'),
@@ -23,6 +27,10 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 export default function SignIn() {
+  const router = useRouter()
+
+  const [isLoading, setIsLoading] = useState(false)
+
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -31,8 +39,15 @@ export default function SignIn() {
     }
   });
 
-  const handleSubmit = form.handleSubmit((formData) => {
-    console.log('form', formData)
+  const handleSubmit = form.handleSubmit(async(formData) => {
+    try{
+      setIsLoading(true)
+      await axios.post('/api/auth/signin',formData)
+      router.push('/')
+    } catch {
+      toast.error('Houve algum erro ao entrar na sua conta')
+      setIsLoading(false)
+    }
   })
   return (
     <div className='min-h-screen grid place-items-center p-4'>
@@ -78,8 +93,13 @@ export default function SignIn() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Entrar
+              <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isLoading}
+              >
+                {!isLoading && 'Entrar'}
+                {isLoading && 'Carregando...'}
               </Button>
               <Button variant="outline" type="button" className="w-full">
                 Login com Google
