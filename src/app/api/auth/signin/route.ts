@@ -10,6 +10,8 @@ const schema = z.object({
   password: z.string().min(8, 'Pelo menos 8 caracteres')
 })
 
+const SEVEN_DAYS_IN_SECONDS = 7* 24 * 60 * 60
+
 export async function POST(request: NextRequest){
   const body = await request.json()
 
@@ -51,5 +53,20 @@ export async function POST(request: NextRequest){
     {expiresIn: '7d'}
   )
 
-  return  NextResponse.json({ accessToken }, {status: 200})
+  const response = new NextResponse(null, { status:404 })
+
+  response.cookies.set(
+    'accessToken',
+    accessToken,
+    {
+      httpOnly:true,
+      maxAge: SEVEN_DAYS_IN_SECONDS,
+      path: '/',
+      sameSite: 'strict',
+      secure:true
+    }
+  )
+
+  return response
+
 }
